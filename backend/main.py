@@ -42,7 +42,6 @@ async def register_patient_face(
     patient = get_patient_by_mr_number(mr_number)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
-    
     # 2. Process Image
     content = await file.read()
     embedding, error = face_handler.process_image(content)
