@@ -15,9 +15,7 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown
 
-app = FastAPI(title="Patient Face Recognition API", lifespan=lifespan)
-
-SIMILARITY_THRESHOLD = 0.5  # Strict threshold for ArcFace/Buffalo_S
+SIMILARITY_THRESHOLD = 0.4  # Adjusted for SFace (Cosine Similarity)
 
 @app.get("/")
 def read_root():

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
-DB_NAME = "clinic_db" # Default, change if needed
+DB_NAME = "patientData" # Default, change if needed
 COLLECTION_NAME = "patients"
 
 client = None

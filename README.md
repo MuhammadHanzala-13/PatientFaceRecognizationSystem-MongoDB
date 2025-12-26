@@ -44,7 +44,7 @@ You must configure the **Vector Search Index** in MongoDB Atlas for the matching
    {
      "fields": [
        {
-         "numDimensions": 512,
+         "numDimensions": 128,
          "path": "faceEmbedding",
          "similarity": "cosine",
          "type": "vector"
@@ -76,9 +76,11 @@ streamlit run frontend/app.py
 
 ## 🧠 Technical Decisions & Trade-offs
 
-### Face Model (InsightFace Buffalo_S)
-We avoided heavy Transformer-based models or deep tracking pipelines. `Buffalo_S` detects faces (RetinaFace) and extracts embeddings (ArcFace) in one go. It handles alignment automatically. 
-- **Trade-off**: Slightly less accurate than massive server-grade models on non-frontal faces, but perfect for a cooperative "look at the camera" clinic setting.
+### Face Model (OpenCV SFace)
+We switched to **OpenCV's built-in SFace model** to ensure it runs on any Windows machine without complex C++ build tools.
+- **Detector**: YuNet (Lightweight, High Accuracy)
+- **Recognizer**: SFace (128D embedding, Mobile-friendly)
+- **Why?**: This eliminates installation headaches while maintaining excellent accuracy for an MVP.
 
 ### Vector Search vs. In-Memory
 We use MongoDB Vector Search instead of loading all 10,000+ embeddings into a generic `scikit-learn` model in RAM.
@@ -88,8 +90,8 @@ We use MongoDB Vector Search instead of loading all 10,000+ embeddings into a ge
 We enforce a strict **One Face Per Image** rule. If the receptionist captures a photo with background faces, the system rejects it rather than guessing. This prevents identity mix-ups.
 
 ### Thresholding
-We use a similarity threshold (default `0.5`). 
-- **>= 0.5**: Identity Verified.
-- **< 0.5**: Verification Failed.
-*Note: This threshold is tuned for Cosine Similarity on ArcFace embeddings. Adjust in `backend/main.py` if false negatives occur.*
+We use a similarity threshold (default `0.4`). 
+- **>= 0.4**: Identity Verified.
+- **< 0.4**: Verification Failed.
+*Note: This threshold is tuned for Cosine Similarity on SFace embeddings.*
 
