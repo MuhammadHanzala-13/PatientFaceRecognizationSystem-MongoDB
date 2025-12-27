@@ -9,7 +9,7 @@ st.info("Enter patient details to add them to the database.")
 
 with st.form("new_patient_form"):
     col1, col2 = st.columns(2)
-    
+
     with col1:
         name = st.text_input("Full Name *", placeholder="e.g. Ali Khan")
         father_name = st.text_input("Father Name *", placeholder="e.g. Muhammad Khan")
@@ -19,7 +19,7 @@ with st.form("new_patient_form"):
         
     with col2:
         mr_number = st.text_input("MR Number (Unique) *", placeholder="e.g. PT-4878")
-        dob = st.date_input("Date of Birth *", value=date(1990, 1, 1))
+        dob = st.date_input("Date of Birth *", value=date(2000, 1, 1))
         age = st.number_input("Age *", min_value=0, max_value=120, value=30)
         address = st.text_input("Address *", placeholder="e.g. Gulshan, Karachi")
         amount = st.number_input("Amount", min_value=0.0, value=200.0, step=50.0)
