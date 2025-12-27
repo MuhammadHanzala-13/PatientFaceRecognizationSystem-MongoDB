@@ -11,7 +11,7 @@ st.markdown("Search for a patient by MR Number to enroll their facial data.")
 with st.container():
     col1, col2 = st.columns([3, 1])
     with col1:
-        mr_number = st.text_input("MR Number", placeholder="Enter Patient MR (e.g. MR-2024-001)", label_visibility="collapsed")
+        mr_number = st.text_input("MR Number", placeholder="Enter Patient MR (e.g. PT-0000)", label_visibility="collapsed")
     with col2:
         search_btn = st.button("Search Patient")
 
@@ -49,7 +49,8 @@ if st.session_state.patient_data:
     if p['has_face']:
         st.warning("This patient already has a registered face. Enrolling again will overwrite the existing data.")
 
-    st.markdown("### enrollment")
+    st.markdown("### Enrollment")
+    st.markdown("*If Need of Enrollment Again*")
     img_buffer = st.camera_input("Capture Face")
     
     if img_buffer is not None:
