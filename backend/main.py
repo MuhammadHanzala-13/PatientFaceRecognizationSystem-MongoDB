@@ -1,9 +1,11 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from contextlib import asynccontextmanager
 from typing import Optional
-from backend.database import init_db, get_patient_by_mr_number, update_patient_embedding, search_patient_by_embedding, get_patient_by_id
+from datetime import datetime
+from backend.database import init_db, get_patient_by_mr_number, update_patient_embedding, search_patient_by_embedding, get_patient_by_id, create_patient
 from backend.face_utils import face_handler
-from backend.models import RecognitionResponse
+from backend.models import RecognitionResponse, PatientCreate
+from backend.similarity import cosine_similarity
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,7 +17,9 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown
 
-SIMILARITY_THRESHOLD = 0.4  # Adjusted for SFace (Cosine Similarity)
+app = FastAPI(title="Patient Face Recognition API", lifespan=lifespan)
+
+SIMILARITY_THRESHOLD = 0.6  # Strict threshold for true cosine similarity (SFace embeddings)
 
 @app.get("/")
 def read_root():
@@ -32,6 +36,32 @@ def lookup_patient(mr_number: str):
         "mrNumber": patient.get("mrNumber"),
         "has_face": "faceEmbedding" in patient
     }
+
+@app.post("/patients/create")
+def add_new_patient(patient: PatientCreate):
+    # Convert Pydantic to Dict - Match exact database schema
+    data = {
+        "name": patient.name,
+        "fatherName": patient.father_name,
+        "mrNumber": patient.mr_number,
+        "phone": patient.phone,
+        "cnic": patient.cnic,
+        "gender": patient.gender,
+        "dateOfBirth": patient.date_of_birth,
+        "age": patient.age,
+        "address": patient.address,
+        "amount": patient.amount,
+        "receptionistId": patient.receptionist_id,
+        "status": "active",
+        "createdAt": datetime.now(),
+        "updatedAt": datetime.now()
+    }
+    
+    pid, error = create_patient(data)
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+        
+    return {"message": "Patient created successfully", "id": pid}
 
 @app.post("/register")
 async def register_patient_face(
@@ -73,19 +103,34 @@ async def recognize_patient(file: UploadFile = File(...)):
         )
         
     best_match = results[0]
-    score = best_match.get("score", 0.0)
+    mongodb_score = best_match.get("score", 0.0)
     
-    # 3. Threshold Check
-    if score >= SIMILARITY_THRESHOLD:
+    # CRITICAL FIX: Calculate TRUE cosine similarity
+    # MongoDB's score is NOT cosine similarity - it's a relevance score
+    # We need to fetch the stored embedding and calculate manually
+    stored_patient = get_patient_by_id(str(best_match["_id"]))
+    if not stored_patient or "faceEmbedding" not in stored_patient:
+        return RecognitionResponse(
+            similarity_score=0.0,
+            message="No face embedding found for matched patient"
+        )
+    
+    stored_embedding = stored_patient["faceEmbedding"]
+    true_similarity = cosine_similarity(embedding, stored_embedding)
+    
+    print(f"DEBUG: MongoDB Score={mongodb_score:.4f}, True Cosine Similarity={true_similarity:.4f}")
+    
+    # 3. Threshold Check using TRUE similarity
+    if true_similarity >= SIMILARITY_THRESHOLD:
         return RecognitionResponse(
             patient_id=str(best_match["_id"]),
             name=best_match.get("name"),
             mr_number=best_match.get("mrNumber"),
-            similarity_score=score,
+            similarity_score=true_similarity,
             message="Identity Verified"
         )
     else:
         return RecognitionResponse(
-            similarity_score=score,
-            message="Identity verification failed: Low similarity score"
+            similarity_score=true_similarity,
+            message=f"Identity verification failed: Similarity {true_similarity:.3f} < threshold {SIMILARITY_THRESHOLD}"
         )
