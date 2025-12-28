@@ -25,7 +25,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 #  Feature Cards
 col1, col2, col3 = st.columns(3)
-
 with col1:
     st.markdown("""
     <div class="css-card">
