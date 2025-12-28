@@ -23,7 +23,6 @@ st.markdown("""
     <p style="font-size: 1.2rem; color: #aaa;">Secure Biometric Authentication for Healthcare</p>
 </div>
 """, unsafe_allow_html=True)
-
 #  Feature Cards
 col1, col2, col3 = st.columns(3)
 
