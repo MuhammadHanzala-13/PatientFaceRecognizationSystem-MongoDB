@@ -43,7 +43,6 @@ with col2:
     </div>
     """, unsafe_allow_html=True)
 
-
 with col3:
     st.markdown("""
     <div class="css-card">
