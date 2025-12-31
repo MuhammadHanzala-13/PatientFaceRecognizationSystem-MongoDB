@@ -2,10 +2,11 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from contextlib import asynccontextmanager
 from typing import Optional
 from datetime import datetime
-from backend.database import init_db, get_patient_by_mr_number, update_patient_embedding, search_patient_by_embedding, get_patient_by_id, create_patient
+from backend.database import init_db, get_patient_by_mr_number, update_patient_embedding, search_patient_by_embedding, get_patient_by_id
 from backend.face_utils import face_handler
-from backend.models import RecognitionResponse, PatientCreate
+from backend.models import RecognitionResponse
 from backend.similarity import cosine_similarity
+from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,17 +20,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Patient Face Recognition API", lifespan=lifespan)
 
-from fastapi.middleware.cors import CORSMiddleware
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-SIMILARITY_THRESHOLD = 0.6  # Strict threshold for true cosine similarity (SFace embeddings)
+SIMILARITY_THRESHOLD = 0.6
 
 @app.get("/")
 def read_root():
@@ -44,34 +43,8 @@ def lookup_patient(mr_number: str):
         "id": str(patient["_id"]),
         "name": patient.get("name"),
         "mrNumber": patient.get("mrNumber"),
-        "has_face": "faceEmbedding" in patient
+        "has_face": "faceEmbedding" in patient and len(patient["faceEmbedding"]) > 0
     }
-
-@app.post("/patients/create")
-def add_new_patient(patient: PatientCreate):
-    # Convert Pydantic to Dict - Match exact database schema
-    data = {
-        "name": patient.name,
-        "fatherName": patient.father_name,
-        "mrNumber": patient.mr_number,
-        "phone": patient.phone,
-        "cnic": patient.cnic,
-        "gender": patient.gender,
-        "dateOfBirth": patient.date_of_birth,
-        "age": patient.age,
-        "address": patient.address,
-        "amount": patient.amount,
-        "receptionistId": patient.receptionist_id,
-        "status": "active",
-        "createdAt": datetime.now(),
-        "updatedAt": datetime.now()
-    }
-    
-    pid, error = create_patient(data)
-    if error:
-        raise HTTPException(status_code=400, detail=error)
-        
-    return {"message": "Patient created successfully", "id": pid}
 
 @app.post("/register")
 async def register_patient_face(

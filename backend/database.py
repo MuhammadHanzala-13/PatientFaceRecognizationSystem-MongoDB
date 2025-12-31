@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
-DB_NAME = "PatientData" # Default, change if needed
+DB_NAME = "Medical_Management_System"
 COLLECTION_NAME = "patients"
 
 client = None
@@ -73,10 +73,4 @@ def search_patient_by_embedding(embedding: list):
 def get_all_patients_limit(limit=10):
     return list(collection.find({}, {"faceEmbedding": 0}).limit(limit))
 
-def create_patient(data: dict):
-    # Check duplicate MR
-    if collection.find_one({"mrNumber": data["mrNumber"]}):
-        return None, "MR Number already exists"
-    
-    result = collection.insert_one(data)
-    return str(result.inserted_id), None
+
