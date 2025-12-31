@@ -28,7 +28,6 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("""
     <div class="css-card">
-        <h2 style="text-align: center;">🔐</h2>
         <h3 style="text-align: center;">Secure</h3>
         <p style="text-align: center; color: #ccc;">Vector-based encryption for privacy</p>
     </div>
@@ -37,7 +36,6 @@ with col1:
 with col2:
     st.markdown("""
     <div class="css-card">
-        <h2 style="text-align: center;">⚡</h2>
         <h3 style="text-align: center;">Fast</h3>
         <p style="text-align: center; color: #ccc;">Real-time recognition < 2s</p>
     </div>
@@ -46,7 +44,6 @@ with col2:
 with col3:
     st.markdown("""
     <div class="css-card">
-        <h2 style="text-align: center;">💻</h2>
         <h3 style="text-align: center;">Efficient</h3>
         <p style="text-align: center; color: #ccc;">Optimized for CPU inference</p>
     </div>
@@ -68,4 +65,5 @@ with st.expander("System Technical Specifications", expanded=True):
         st.markdown("- Database: MongoDB Atlas (Vector)")
         st.markdown("- UI: Streamlit Dark Mode")
 
-st.markdown("<div style='text-align: center; padding: 2rem; color: #666;'>Select a module from the sidebar to begin The Process</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; padding: 2rem; color: #666;'>Please Action for Register & Recognize Patient Face</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; padding: 2rem; color: #666;'>Developed by Muhammad Hanzala Saylani's AI Dev Team</div>", unsafe_allow_html=True)
