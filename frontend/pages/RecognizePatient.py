@@ -59,3 +59,4 @@ with col2:
         st.info("Waiting for image input...")
         
     st.markdown('</div>', unsafe_allow_html=True)
+    
