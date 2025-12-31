@@ -45,6 +45,7 @@ class FaceHandler:
         self.detector.setInputSize((w, h))
         
         # Detect faces
+      
         # faces = [x, y, w, h, x_re, y_re, x_le, y_le, x_nt, y_nt, x_rcm, y_rcm, x_lcm, y_lcm, score]
         _, faces = self.detector.detect(img)
         
