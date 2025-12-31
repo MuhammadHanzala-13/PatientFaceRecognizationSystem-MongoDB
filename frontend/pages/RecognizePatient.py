@@ -48,7 +48,11 @@ with col2:
                         st.error("NO MATCH FOUND")
                         st.write(f"Reason: {msg}")
                 else:
-                    st.error("Processing Error")
+                    try:
+                        err_data = res.json()
+                        st.error(f"Error: {err_data.get('detail', 'Unknown Error')}")
+                    except:
+                        st.error(f"Processing Error: {res.status_code}")
             except Exception as e:
                 st.error("Connection Error")
     else:

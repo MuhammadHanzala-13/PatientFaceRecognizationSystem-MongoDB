@@ -7,6 +7,11 @@ from backend.face_utils import face_handler
 from backend.models import RecognitionResponse
 from backend.similarity import cosine_similarity
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+
+# Configure Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -69,15 +74,18 @@ async def register_patient_face(
 
 @app.post("/recognize", response_model=RecognitionResponse)
 async def recognize_patient(file: UploadFile = File(...)):
+    logger.info("Starting Face Recognition Request...")
     # 1. Process Image
     content = await file.read()
     embedding, error = face_handler.process_image(content)
     
     if error:
+        logger.error(f"Face Processing Error: {error}")
         raise HTTPException(status_code=400, detail=error)
         
     # 2. Vector Search
     results = search_patient_by_embedding(embedding)
+    logger.info(f"Vector performed search. Found {len(results)} candidates.")
     
     if not results:
         return RecognitionResponse(
