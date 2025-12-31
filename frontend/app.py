@@ -71,3 +71,6 @@ with st.expander("System Technical Specifications", expanded=True):
 
 st.markdown("<div style='text-align: center; padding: 2rem; color: #666;'>Please Action for Register & Recognize Patient Face</div>", unsafe_allow_html=True)
 st.markdown("<div style='text-align: center; padding: 2rem; color: #666;'>Developed by Muhammad Hanzala Saylani's AI Dev Team</div>", unsafe_allow_html=True)
+
+
+
