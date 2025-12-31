@@ -45,14 +45,14 @@ class FaceHandler:
         self.detector.setInputSize((w, h))
         
         # Detect faces
-        # faces = [x, y, w, h, x_re, y_re, x_le, y_le, x_nt, y_nt, x_rcm, y_rcm, x_lcm, y_lcm, score]
+        faces = [x, y, w, h, x_re, y_re, x_le, y_le, x_nt, y_nt, x_rcm, y_rcm, x_lcm, y_lcm, score]
         _, faces = self.detector.detect(img)
         
         if faces is None or len(faces) == 0:
             return None, "No face detected"
         
         if len(faces) > 1:
-            return None, "Multiple faces detected. Please ensure only one person is in frame."
+            return None, f"Multiple faces detected (Found {len(faces)}). Please ensure only one person is in frame."
             
         face = faces[0]
         
