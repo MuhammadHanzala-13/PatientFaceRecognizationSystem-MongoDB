@@ -37,7 +37,7 @@ SIMILARITY_THRESHOLD = 0.6
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "system": "Patient Face Recognition MVP"}
+    return {"status": "online", "system": "Patient Face Recognition System For Saylani Medical Center "}
 
 @app.get("/patient/{mr_number}")
 def lookup_patient(mr_number: str):
