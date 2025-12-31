@@ -48,6 +48,7 @@ def lookup_patient(mr_number: str):
         "id": str(patient["_id"]),
         "name": patient.get("name"),
         "mrNumber": patient.get("mrNumber"),
+        "cnic": patient.get("cnic"),
         "has_face": "faceEmbedding" in patient and len(patient["faceEmbedding"]) > 0
     }
 

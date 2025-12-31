@@ -11,64 +11,88 @@ API_URL = "http://localhost:8000"
 
 apply_custom_styles()
 
-st.header("Biometric Registration")
-st.markdown("Enroll patient facial data for secure identity verification.")
+st.header("Patient Registration (Biometric)")
+st.markdown("Link a face to an existing patient record.")
 
-# Search
-st.markdown('<div class="css-card">', unsafe_allow_html=True)
-col1, col2 = st.columns([4, 1])
-with col1:
-    mr_number = st.text_input("Search Patient (MR Number)", placeholder="e.g. PT-0000", label_visibility="collapsed")
-with col2:
-    search_btn = st.button("Search Database", use_container_width=True)
-st.markdown('</div>', unsafe_allow_html=True)
+# 1. Search Patient
+mr_number = st.text_input("Enter MR Number", placeholder="e.g. PT-1001")
 
-if "patient_data" not in st.session_state:
-    st.session_state.patient_data = None
+if mr_number:
+    if st.button("Search Patient"):
+        try:
+            res = requests.get(f"{API_URL}/patient/{mr_number}")
+            if res.status_code == 200:
+                patient = res.json()
+                st.session_state["patient_data"] = patient
+                st.session_state["verification_passed"] = False  # Reset
+                st.rerun()
+            else:
+                st.error("Patient Not Found")
+        except:
+            st.error("Connection Error")
 
-if search_btn and mr_number:
-    try:
-        res = requests.get(f"{API_URL}/patient/{mr_number}")
-        if res.status_code == 200:
-            st.session_state.patient_data = res.json()
-        else:
-            st.error("Patient not found.")
-            st.session_state.patient_data = None
-    except requests.exceptions.ConnectionError:
-        st.error("Connection failed.")
-
-# Result
-if st.session_state.patient_data:
-    p = st.session_state.patient_data
+# 2. Display Result & Handle Logic
+if "patient_data" in st.session_state:
+    p = st.session_state["patient_data"]
     
-    st.markdown('<div class="css-card">', unsafe_allow_html=True)
-    st.subheader("👤 Patient Details")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.write(f"**Name:** {p['name']}")
-        st.write(f"**MR Number:** {p['mrNumber']}")
-    with col_b:
-        if p['has_face']:
-            st.success("Status: Biometrics Registered")
-        else:
-            st.warning("Status: Biometrics Missing")
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Card Display
+    st.markdown(f"""
+    <div style="background-color: #1E1E1E; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+        <h3 style="margin:0; color: #4CAF50;">{p['name']}</h3>
+        <p style="margin:0; color: #aaa;">MR: {p['mrNumber']}</p>
+        <p style="margin:0; color: #aaa;">Status: { "✅ Biometric Registered" if p['has_face'] else "❌ Not Registered" }</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("### 📸 Biometric Enrollment")
-    img_buffer = st.camera_input("Capture Face")
+    # LOGIC: Check if update is allowed
+    allow_upload = False
     
-    if img_buffer is not None:
-        if st.button("Save Face Data"):
+    if not p['has_face']:
+        # Case A: New Registration -> Direct Access
+        allow_upload = True
+        st.info("Ready for new registration.")
+        
+    else:
+        # Case B: Already Registered -> Security Check
+        if not st.session_state.get("verification_passed", False):
+            st.warning("⚠️ Biometric already registered!")
+            st.markdown("**To update, please verify Patient CNIC:**")
+            
+            cnic_input = st.text_input("Enter CNIC for Validation")
+            
+            if st.button("Verify CNIC"):
+                # Backend returns 'cnic' in lookup_patient, so we can verify securely here.
+                stored_cnic = p.get('cnic', '')
+                
+                if cnic_input.strip() == stored_cnic.strip():
+                     st.success("✅ Identity Verified! Update Unlocked.")
+                     st.session_state["verification_passed"] = True
+                     st.rerun()
+                else:
+                     st.error(f"❌ CNIC Mismatch! Entered: {cnic_input}")
+        else:
+            allow_upload = True
+            st.warning("⚠️ UPDATE MODE ENABLED")
+
+    # 3. Camera & Upload
+    if allow_upload:
+        img_buffer = st.camera_input("Capture Face", label_visibility="collapsed")
+        
+        if img_buffer and st.button("Register / Update Face"):
             try:
+                # Prepare Data
                 files = {"file": ("face.jpg", img_buffer, "image/jpeg")}
                 data = {"mr_number": p['mrNumber']}
+                
                 res = requests.post(f"{API_URL}/register", data=data, files=files)
                 
                 if res.status_code == 200:
-                    st.success("Face Registered Successfully!")
-                    st.session_state.patient_data["has_face"] = True 
+                    st.success("✅ Successfully Registered!")
+                    st.session_state["patient_data"]['has_face'] = True # Update local state
+                    st.session_state["verification_passed"] = False # Reset
+                    st.rerun()
                 else:
-                    err = res.json().get('detail', 'Unknown error')
-                    st.error(f"Registration Failed: {err}")
+                    st.error(f"Error: {res.json().get('detail')}")
+                    
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Connection Failed: {e}")
