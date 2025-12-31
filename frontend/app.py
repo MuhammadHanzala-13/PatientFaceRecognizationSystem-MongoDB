@@ -28,6 +28,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("""
     <div class="css-card">
+        <h2 style="text-align: center;">🔐</h2>
         <h3 style="text-align: center;">Secure</h3>
         <p style="text-align: center; color: #ccc;">Vector-based encryption for privacy</p>
     </div>
@@ -36,6 +37,7 @@ with col1:
 with col2:
     st.markdown("""
     <div class="css-card">
+        <h2 style="text-align: center;">⚡</h2>
         <h3 style="text-align: center;">Fast</h3>
         <p style="text-align: center; color: #ccc;">Real-time recognition < 2s</p>
     </div>
@@ -44,6 +46,7 @@ with col2:
 with col3:
     st.markdown("""
     <div class="css-card">
+        <h2 style="text-align: center;">💻</h2>
         <h3 style="text-align: center;">Efficient</h3>
         <p style="text-align: center; color: #ccc;">Optimized for CPU inference</p>
     </div>
