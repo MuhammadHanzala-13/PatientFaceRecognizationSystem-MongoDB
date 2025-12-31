@@ -65,7 +65,8 @@ with st.expander("System Technical Specifications", expanded=True):
     with col_b:
         st.markdown("**Tech Stack**")
         st.markdown("- Model: OpenCV SFace (128-d)")
-        st.markdown("- Database: MongoDB Atlas (Vector)")
+        st.markdown("- Database: MongoDB Atlas vector search")
+        st.markdown("- Embedding for storing face features")
         st.markdown("- UI: Streamlit Dark Mode")
 
 st.markdown("<div style='text-align: center; padding: 2rem; color: #666;'>Please Action for Register & Recognize Patient Face</div>", unsafe_allow_html=True)
