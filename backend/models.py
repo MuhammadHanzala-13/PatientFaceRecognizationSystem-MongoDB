@@ -13,3 +13,10 @@ class RecognitionResponse(BaseModel):
     mr_number: Optional[str] = None
     similarity_score: float
     message: str
+
+class RegisterBase64(BaseModel):
+    mr_number: str
+    image_base64: str
+
+class RecognizeBase64(BaseModel):
+    image_base64: str

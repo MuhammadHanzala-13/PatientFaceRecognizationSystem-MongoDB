@@ -1,8 +1,15 @@
 import cv2
 import numpy as np
 import os
+import base64
 
 class FaceHandler:
+    def decode_base64(self, base64_string):
+        """Helper to convert base64 string to bytes, handles optional data URI prefix"""
+        if "," in base64_string:
+            base64_string = base64_string.split(",")[1]
+        return base64.b64decode(base64_string)
+
     def __init__(self):
         # Paths to models
         base_path = os.path.dirname(__file__)
@@ -32,8 +39,29 @@ class FaceHandler:
             target_id=cv2.dnn.DNN_TARGET_CPU
         )
         
-    def process_image(self, image_bytes):
-        # Decode image
+    def process_image(self, image_data):
+        # 1. Handle case where image_data is bytes but contains a base64 string
+        if isinstance(image_data, bytes):
+            try:
+                # Try decoding as utf-8 to see if it's a base64 string
+                potential_str = image_data.decode('utf-8').strip()
+                # Check for common base64 characteristics
+                if potential_str.startswith("data:image") or (len(potential_str) > 100 and "," not in potential_str):
+                    image_data = potential_str
+            except:
+                # Not a utf-8 string, must be raw binary image data
+                pass
+
+        # 2. Decode if it's now a base64 string
+        if isinstance(image_data, str):
+            try:
+                image_bytes = self.decode_base64(image_data)
+            except Exception:
+                return None, "Invalid Base64 encoding"
+        else:
+            image_bytes = image_data
+
+        # 3. Decode image for OpenCV
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         

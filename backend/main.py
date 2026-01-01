@@ -4,7 +4,7 @@ from typing import Optional
 from datetime import datetime
 from backend.database import init_db, get_patient_by_mr_number, update_patient_embedding, search_patient_by_embedding, get_patient_by_id
 from backend.face_utils import face_handler
-from backend.models import RecognitionResponse
+from backend.models import RecognitionResponse, RegisterBase64, RecognizeBase64
 from backend.similarity import cosine_similarity
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -55,14 +55,23 @@ def lookup_patient(mr_number: str):
 @app.post("/register")
 async def register_patient_face(
     mr_number: str = Form(...),
-    file: UploadFile = File(...)
+    image: Optional[UploadFile] = File(None),
+    image_base64: Optional[str] = Form(None)
 ):
     # 1. Verify patient exists
     patient = get_patient_by_mr_number(mr_number)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
-    # 2. Process Image
-    content = await file.read()
+    
+    # 2. Get Image Content
+    if image:
+        content = await image.read()
+    elif image_base64:
+        content = image_base64
+    else:
+        raise HTTPException(status_code=400, detail="No image provided (upload a file or send base64)")
+
+    # 3. Process Image
     embedding, error = face_handler.process_image(content)
     
     if error:
@@ -74,10 +83,21 @@ async def register_patient_face(
     return {"message": f"Face registered successfully for {patient.get('name')}"}
 
 @app.post("/recognize", response_model=RecognitionResponse)
-async def recognize_patient(file: UploadFile = File(...)):
+async def recognize_patient(
+    image: Optional[UploadFile] = File(None),
+    image_base64: Optional[str] = Form(None)
+):
     logger.info("Starting Face Recognition Request...")
-    # 1. Process Image
-    content = await file.read()
+    
+    # 1. Get Image Content
+    if image:
+        content = await image.read()
+    elif image_base64:
+        content = image_base64
+    else:
+        raise HTTPException(status_code=400, detail="No image provided")
+
+    # 2. Process Image
     embedding, error = face_handler.process_image(content)
     
     if error:
