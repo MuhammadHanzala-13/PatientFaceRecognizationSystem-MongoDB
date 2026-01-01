@@ -29,7 +29,7 @@ with col2:
     if img_buffer is not None:
         if st.button("Verify Identity", use_container_width=True):
             try:
-                files = {"file": ("query.jpg", img_buffer, "image/jpeg")}
+                files = {"image": ("query.jpg", img_buffer, "image/jpeg")}
                 res = requests.post(f"{API_URL}/recognize", files=files)
                 
                 if res.status_code == 200:

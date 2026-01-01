@@ -40,7 +40,7 @@ if "patient_data" in st.session_state:
     <div style="background-color: #1E1E1E; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
         <h3 style="margin:0; color: #4CAF50;">{p['name']}</h3>
         <p style="margin:0; color: #aaa;">MR: {p['mrNumber']}</p>
-        <p style="margin:0; color: #aaa;">Status: { "✅ Biometric Registered" if p['has_face'] else "❌ Not Registered" }</p>
+        <p style="margin:0; color: #aaa;">Status: { "Biometric Registered" if p['has_face'] else "Not Registered" }</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -55,7 +55,7 @@ if "patient_data" in st.session_state:
     else:
         # Case B: Already Registered -> Security Check
         if not st.session_state.get("verification_passed", False):
-            st.warning("⚠️ Biometric already registered!")
+            st.warning("Biometric already registered!")
             st.markdown("**To update, please verify Patient CNIC:**")
             
             cnic_input = st.text_input("Enter CNIC for Validation")
@@ -65,14 +65,14 @@ if "patient_data" in st.session_state:
                 stored_cnic = p.get('cnic', '')
                 
                 if cnic_input.strip() == stored_cnic.strip():
-                     st.success("✅ Identity Verified! Update Unlocked.")
+                     st.success("Identity Verified! Update Unlocked.")
                      st.session_state["verification_passed"] = True
                      st.rerun()
                 else:
-                     st.error(f"❌ CNIC Mismatch! Entered: {cnic_input}")
+                     st.error(f"CNIC Mismatch! Entered: {cnic_input}")
         else:
             allow_upload = True
-            st.warning("⚠️ UPDATE MODE ENABLED")
+            st.warning("UPDATE MODE ENABLED")
 
     # 3. Camera & Upload
     if allow_upload:
@@ -81,13 +81,13 @@ if "patient_data" in st.session_state:
         if img_buffer and st.button("Register / Update Face"):
             try:
                 # Prepare Data
-                files = {"file": ("face.jpg", img_buffer, "image/jpeg")}
+                files = {"image": ("face.jpg", img_buffer, "image/jpeg")}
                 data = {"mr_number": p['mrNumber']}
                 
                 res = requests.post(f"{API_URL}/register", data=data, files=files)
                 
                 if res.status_code == 200:
-                    st.success("✅ Successfully Registered!")
+                    st.success("Successfully Registered!")
                     st.session_state["patient_data"]['has_face'] = True # Update local state
                     st.session_state["verification_passed"] = False # Reset
                     st.rerun()
