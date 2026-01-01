@@ -142,7 +142,7 @@ async def recognize_patient(
             message="Identity Verified"
         )
     else:
-        return RecognitionResponse(
-            similarity_score=true_similarity,
-            message=f"Identity verification failed: Similarity {true_similarity:.3f} < threshold {SIMILARITY_THRESHOLD}"
+        raise HTTPException(
+            status_code=401,
+            detail=f"Identity verification failed: Similarity {true_similarity:.3f} < threshold {SIMILARITY_THRESHOLD}"
         )
