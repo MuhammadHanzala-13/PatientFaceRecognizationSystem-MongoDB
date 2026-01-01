@@ -55,8 +55,8 @@ def lookup_patient(mr_number: str):
 @app.post("/register")
 async def register_patient_face(
     mr_number: str = Form(...),
-    image: Optional[UploadFile] = File(None),
-    image_base64: Optional[str] = Form(None)
+    image: UploadFile = File(default=None, description="Upload patient face image (JPG/PNG)"),
+    image_base64: Optional[str] = Form(default=None, description="Or provide base64 encoded image")
 ):
     # 1. Verify patient exists
     patient = get_patient_by_mr_number(mr_number)
@@ -64,7 +64,7 @@ async def register_patient_face(
         raise HTTPException(status_code=404, detail="Patient not found")
     
     # 2. Get Image Content
-    if image:
+    if image and image.filename:
         content = await image.read()
     elif image_base64:
         content = image_base64
@@ -84,13 +84,13 @@ async def register_patient_face(
 
 @app.post("/recognize", response_model=RecognitionResponse)
 async def recognize_patient(
-    image: Optional[UploadFile] = File(None),
-    image_base64: Optional[str] = Form(None)
+    image: UploadFile = File(default=None, description="Upload face image for recognition (JPG/PNG)"),
+    image_base64: Optional[str] = Form(default=None, description="Or provide base64 encoded image")
 ):
     logger.info("Starting Face Recognition Request...")
     
     # 1. Get Image Content
-    if image:
+    if image and image.filename:
         content = await image.read()
     elif image_base64:
         content = image_base64
