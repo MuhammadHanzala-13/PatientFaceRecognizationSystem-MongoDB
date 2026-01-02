@@ -91,7 +91,7 @@ class FaceHandler:
         # Extract Feature (128D)
         embedding = self.recognizer.feature(aligned_face)
         
-        # Flatten to list
-        return embedding[0].tolist(), None
+        # Flatten to list and ensure float32 standard
+        return [float(x) for x in embedding[0]], None
 
 face_handler = FaceHandler()

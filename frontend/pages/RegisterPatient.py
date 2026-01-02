@@ -54,7 +54,17 @@ if "patient_data" in st.session_state:
         
     else:
         # Case B: Already Registered -> Security Check
-        if not st.session_state.get("verification_passed", False):
+        # Check if we just registered in the last action
+        if st.session_state.get("just_registered", False):
+            st.success("✅ Successfully Registered!")
+            # Use columns to position the 'Close' button to the right if needed, or just let user navigate away.
+            if st.button("Register Another Patient"):
+                del st.session_state["patient_data"]
+                del st.session_state["just_registered"]
+                st.rerun()
+
+        # If not just registered (or even if so, show the status but maybe clearer)
+        elif not st.session_state.get("verification_passed", False):
             st.warning("Biometric already registered!")
             st.markdown("**To update, please verify Patient CNIC:**")
             
@@ -86,10 +96,11 @@ if "patient_data" in st.session_state:
                 
                 res = requests.post(f"{API_URL}/register", data=data, files=files)
                 
-                if res.status_code == 200:
-                    st.success("Successfully Registered!")
+                if res.status_code == 201:
+                    # st.success("Successfully Registered!") # Removed b/c it vanishes on rerun
                     st.session_state["patient_data"]['has_face'] = True # Update local state
                     st.session_state["verification_passed"] = False # Reset
+                    st.session_state["just_registered"] = True # Set flag for next render
                     st.rerun()
                 else:
                     st.error(f"Error: {res.json().get('detail')}")

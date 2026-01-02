@@ -26,6 +26,21 @@ def init_db():
     try:
         client.admin.command('ping')
         print("Connected to MongoDB Atlas!")
+        
+        # DEBUG: Check for Search Indexes
+        print("Checking Search Indexes...")
+        try:
+            indexes = list(collection.list_search_indexes())
+            if not indexes:
+                print("WARNING: No Search Indexes found on 'patients' collection!")
+            else:
+                print(f"Found {len(indexes)} Search Indexes:")
+                for idx in indexes:
+                    print(f" - Name: {idx.get('name')}, Type: {idx.get('type')}")
+                    
+        except Exception as e:
+            print(f"Failed to list indexes (might need permissions): {e}")
+            
     except Exception as e:
         print(f"Failed to connect to MongoDB: {e}")
         raise e

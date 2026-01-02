@@ -52,7 +52,7 @@ def lookup_patient(mr_number: str):
         "has_face": "faceEmbedding" in patient and len(patient["faceEmbedding"]) > 0
     }
 
-@app.post("/register")
+@app.post("/register", status_code=201)
 async def register_patient_face(
     mr_number: str = Form(...),
     image: UploadFile = File(default=None, description="Upload patient face image (JPG/PNG)"),
@@ -109,9 +109,9 @@ async def recognize_patient(
     logger.info(f"Vector performed search. Found {len(results)} candidates.")
     
     if not results:
-        return RecognitionResponse(
-            similarity_score=0.0,
-            message="No match found (no candidates)"
+        raise HTTPException(
+            status_code=404,
+            detail="No match found (no candidates)"
         )
         
     best_match = results[0]
