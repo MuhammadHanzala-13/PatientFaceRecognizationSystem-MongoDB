@@ -19,17 +19,24 @@ mr_number = st.text_input("Enter MR Number", placeholder="e.g. PT-1001")
 
 if mr_number:
     if st.button("Search Patient"):
+        found_patient = None
+        error_msg = None
+        
         try:
             res = requests.get(f"{API_URL}/patient/{mr_number}")
             if res.status_code == 200:
-                patient = res.json()
-                st.session_state["patient_data"] = patient
-                st.session_state["verification_passed"] = False  # Reset
-                st.rerun()
+                found_patient = res.json()
             else:
-                st.error("Patient Not Found")
-        except:
-            st.error("Connection Error")
+                error_msg = "Patient Not Found"
+        except Exception as e:
+            error_msg = "Connection Error"
+
+        if found_patient:
+            st.session_state["patient_data"] = found_patient
+            st.session_state["verification_passed"] = False
+            st.rerun()
+        elif error_msg:
+            st.error(error_msg)
 
 # 2. Display Result & Handle Logic
 if "patient_data" in st.session_state:
